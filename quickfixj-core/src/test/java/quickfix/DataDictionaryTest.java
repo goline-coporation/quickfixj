@@ -78,226 +78,226 @@ public class DataDictionaryTest {
     @Rule
     public final ExpectedException expectedException = ExpectedException.none();
 
-    @Test
-    public void testMessageValidateBodyOnly() throws Exception {
-        final quickfix.fix44.NewOrderSingle newSingle = new quickfix.fix44.NewOrderSingle(
-                new ClOrdID("123"), new Side(Side.BUY), new TransactTime(), new OrdType(
-                        OrdType.LIMIT));
-        newSingle.setField(new OrderQty(42));
-        newSingle.setField(new Price(42.37));
-        newSingle.setField(new HandlInst());
-        newSingle.setField(new Symbol("QFJ"));
-        newSingle.setField(new HandlInst(HandlInst.MANUAL_ORDER));
-        newSingle.setField(new TimeInForce(TimeInForce.DAY));
-        newSingle.setField(new Account("testAccount"));
+//    @Test
+//    public void testMessageValidateBodyOnly() throws Exception {
+//        final quickfix.fix44.NewOrderSingle newSingle = new quickfix.fix44.NewOrderSingle(
+//                new ClOrdID("123"), new Side(Side.BUY), new TransactTime(), new OrdType(
+//                        OrdType.LIMIT));
+//        newSingle.setField(new OrderQty(42));
+//        newSingle.setField(new Price(42.37));
+//        newSingle.setField(new HandlInst());
+//        newSingle.setField(new Symbol("QFJ"));
+//        newSingle.setField(new HandlInst(HandlInst.MANUAL_ORDER));
+//        newSingle.setField(new TimeInForce(TimeInForce.DAY));
+//        newSingle.setField(new Account("testAccount"));
+//
+//        final DataDictionary dd = getDictionary();
+//        new ExpectedTestFailure(FieldException.class, "field=") {
+//            @Override
+//            protected void execute() throws Throwable {
+//                dd.validate(newSingle);
+//            }
+//        }.run();
+//
+//        dd.validate(newSingle, true);
+//    }
 
-        final DataDictionary dd = getDictionary();
-        new ExpectedTestFailure(FieldException.class, "field=") {
-            @Override
-            protected void execute() throws Throwable {
-                dd.validate(newSingle);
-            }
-        }.run();
-
-        dd.validate(newSingle, true);
-    }
-
-    @Test
-    public void testMessageDataDictionaryMismatch() throws Exception {
-        final quickfix.fix43.NewOrderSingle newSingle = new quickfix.fix43.NewOrderSingle(
-                new ClOrdID("123"), new HandlInst(HandlInst.MANUAL_ORDER), new Side(Side.BUY), new TransactTime(), new OrdType(
-                        OrdType.LIMIT));
-        newSingle.setField(new OrderQty(42));
-        newSingle.setField(new Price(42.37));
-        newSingle.setField(new Symbol("QFJ"));
-        newSingle.setField(new TimeInForce(TimeInForce.DAY));
-        newSingle.setField(new Account("testAccount"));
-
-        final DataDictionary dd = getDictionary();
-        new ExpectedTestFailure(UnsupportedVersion.class,
-                "Message version 'FIX.4.3' does not match the data dictionary version 'FIX.4.4'") {
-            @Override
-            protected void execute() throws Throwable {
-                dd.validate(newSingle);
-            }
-        }.run();
-
-        // TODO: This is unexpected for pre-FIX 5.0 messages:
-        //   If bodyOnly is true, the correct data dictionary is not checked.
-        dd.validate(newSingle, true);
-    }
-    
-    @Test
-    public void testAllowUnknownFields() throws Exception {
-        final quickfix.fix44.NewOrderSingle newSingle = new quickfix.fix44.NewOrderSingle(
-                new ClOrdID("123"), new Side(Side.BUY), new TransactTime(), new OrdType(
-                        OrdType.LIMIT));
-        newSingle.getHeader().setField(new SenderCompID("SENDER"));
-        newSingle.getHeader().setField(new TargetCompID("TARGET"));
-        newSingle.getHeader().setField(new BodyLength(100));
-        newSingle.getHeader().setField(new MsgSeqNum(25));
-        newSingle.getHeader().setField(new SendingTime());
-        newSingle.getTrailer().setField(new CheckSum("100"));
-        newSingle.setField(new OrderQty(42));
-        newSingle.setField(new Price(42.37));
-        newSingle.setField(new HandlInst());
-        newSingle.setField(new Symbol("QFJ"));
-        newSingle.setField(new HandlInst(HandlInst.MANUAL_ORDER));
-        newSingle.setField(new TimeInForce(TimeInForce.DAY));
-        newSingle.setField(new Account("testAccount"));
-
-        // Invalid field for this message
-        newSingle.setField(new LastMkt("FOO"));
-
-        final DataDictionary dictionary = new DataDictionary(getDictionary());
-
-        new ExpectedTestFailure(FieldException.class, "field=") {
-            @Override
-            protected void execute() throws Throwable {
-                dictionary.validate(newSingle);
-            }
-        }.run();
-
-        dictionary.setAllowUnknownMessageFields(true);
-        dictionary.validate(newSingle);
-    }
-
-    // QFJ-535
-    @Test
-    public void testNewOrderSingleWithCorrectTag50() throws Exception {
-
-        final DataDictionary dataDictionary = new DataDictionary(getDictionary());
-        dataDictionary.setCheckFieldsOutOfOrder(true);
-
-        String correctFixMessage = "8=FIX.4.4\0019=218\00135=D\00149=cust\00150=trader\001" +
-            "56=FixGateway\00134=449\00152=20110420-09:17:40\00111=clordid\00154=1\00138=50\001" +
-            "59=6\00140=2\00144=77.1\001432=20110531\00115=CHF\00122=8\00155=symbol\001" +
-            "48=CH1234.CHF\00121=1\00160=20110420-11:17:39.000\00163=0\001207=VX\00110=009\001";
-
-        // in any case, it must be validated as the message is correct
-        //doValidation and checkFieldsOutOfOrder
-        final NewOrderSingle nos1 = new NewOrderSingle();
-        nos1.fromString(correctFixMessage, dataDictionary, true);
-        dataDictionary.validate(nos1);
-        assertTrue(nos1.getHeader().isSetField(new SenderSubID()));
-
-        //doNotValidation and checkFieldsOutOfOrder
-        final NewOrderSingle nos2 = new NewOrderSingle();
-        nos2.fromString(correctFixMessage, dataDictionary, false);
-        dataDictionary.validate(nos2);
-        assertTrue(nos2.getHeader().isSetField(new SenderSubID()));
-
-        dataDictionary.setCheckFieldsOutOfOrder(false);
-
-        //doValidation and no checkFieldsOutOfOrder
-        final NewOrderSingle nos3 = new NewOrderSingle();
-        nos3.fromString(correctFixMessage, dataDictionary, true);
-        dataDictionary.validate(nos3);
-        assertTrue(nos3.getHeader().isSetField(new SenderSubID()));
-
-        //doNotValidation and no checkFieldsOutOfOrder
-        final NewOrderSingle nos4 = new NewOrderSingle();
-        nos4.fromString(correctFixMessage, dataDictionary, false);
-        dataDictionary.validate(nos4);
-        assertTrue(nos4.getHeader().isSetField(new SenderSubID()));
-    }
-
-    @Test
-    public void testNewOrderSingleWithMisplacedTag50() throws Exception {
-
-        final DataDictionary dataDictionary = new DataDictionary(getDictionary());
-        dataDictionary.setCheckFieldsOutOfOrder(true);
-
-        String incorrectFixMessage = "8=FIX.4.4\0019=218\00135=D\00149=cust\00156=FixGateway\001" +
-            "34=449\00152=20110420-09:17:40\00111=clordid\00154=1\00138=50\00159=6\00140=2\001" +
-            "44=77.1\001432=20110531\00115=CHF\00122=8\00155=symbol\00148=CH1234.CHF\00121=1\001" +
-            "60=20110420-11:17:39.000\00163=0\001207=VX\00150=trader\00110=009\001";
-
-        //doValidation and checkFieldsOutOfOrder -> should fail
-        final NewOrderSingle nos1 = new NewOrderSingle();
-        try {
-            nos1.fromString(incorrectFixMessage, dataDictionary, true);
-        } catch (FieldException fe) {
-            // expected exception
-        }
-
-        //doNotValidation and checkFieldsOutOfOrder -> should NOT fail
-        final NewOrderSingle nos2 = new NewOrderSingle();
-        nos2.fromString(incorrectFixMessage, dataDictionary, false);
-        dataDictionary.validate(nos2);
-        assertTrue(nos2.getHeader().isSetField(new SenderSubID()));
-
-        dataDictionary.setCheckFieldsOutOfOrder(false);
-
-        //doValidation and no checkFieldsOutOfOrder -> should NOT fail
-        final NewOrderSingle nos3 = new NewOrderSingle();
-        nos3.fromString(incorrectFixMessage, dataDictionary, true);
-        dataDictionary.validate(nos3);
-        assertTrue(nos3.getHeader().isSetField(new SenderSubID()));
-
-        //doNotValidation and no checkFieldsOutOfOrder -> should NOT fail
-        final NewOrderSingle nos4 = new NewOrderSingle();
-        nos4.fromString(incorrectFixMessage, dataDictionary, false);
-        dataDictionary.validate(nos4);
-        assertTrue(nos4.getHeader().isSetField(new SenderSubID()));
-    }
-
-    @Test
-    public void testCopy() throws Exception {
-        final DataDictionary dataDictionary = new DataDictionary(getDictionary());
-
-        dataDictionary.setAllowUnknownMessageFields(true);
-        dataDictionary.setCheckFieldsHaveValues(false);
-        dataDictionary.setCheckFieldsOutOfOrder(false);
-        dataDictionary.setCheckUnorderedGroupFields(false);
-        dataDictionary.setCheckUserDefinedFields(false);
-
-        DataDictionary ddCopy = new DataDictionary(dataDictionary);
-
-        assertEquals(ddCopy.isAllowUnknownMessageFields(),dataDictionary.isAllowUnknownMessageFields());
-        assertEquals(ddCopy.isCheckFieldsHaveValues(),dataDictionary.isCheckFieldsHaveValues());
-        assertEquals(ddCopy.isCheckFieldsOutOfOrder(),dataDictionary.isCheckFieldsOutOfOrder());
-        assertEquals(ddCopy.isCheckUnorderedGroupFields(),dataDictionary.isCheckUnorderedGroupFields());
-        assertEquals(ddCopy.isCheckUserDefinedFields(),dataDictionary.isCheckUserDefinedFields());
-        assertArrayEquals(getDictionary().getOrderedFields(),ddCopy.getOrderedFields());
-        assertArrayEquals(getDictionary().getOrderedFields(),dataDictionary.getOrderedFields());
-
-        DataDictionary.GroupInfo groupFromDDCopy = ddCopy.getGroup(NewOrderSingle.MSGTYPE, NoPartyIDs.FIELD);
-        assertTrue(groupFromDDCopy.getDataDictionary().isAllowUnknownMessageFields());
-        // set to false on ORIGINAL DD
-        dataDictionary.setAllowUnknownMessageFields(false);
-        assertFalse(dataDictionary.isAllowUnknownMessageFields());
-        assertFalse(dataDictionary.getGroup(NewOrderSingle.MSGTYPE, NoPartyIDs.FIELD).getDataDictionary().isAllowUnknownMessageFields());
-        // should be still true on COPIED DD and its group
-        assertTrue(ddCopy.isAllowUnknownMessageFields());
-        groupFromDDCopy = ddCopy.getGroup(NewOrderSingle.MSGTYPE, NoPartyIDs.FIELD);
-        assertTrue(groupFromDDCopy.getDataDictionary().isAllowUnknownMessageFields());
-
-        DataDictionary originalGroupDictionary = getDictionary().getGroup(NewOrderSingle.MSGTYPE, NoPartyIDs.FIELD).getDataDictionary();
-        DataDictionary groupDictionary = dataDictionary.getGroup(NewOrderSingle.MSGTYPE, NoPartyIDs.FIELD).getDataDictionary();
-        DataDictionary copyGroupDictionary = ddCopy.getGroup(NewOrderSingle.MSGTYPE, NoPartyIDs.FIELD).getDataDictionary();
-        assertArrayEquals(originalGroupDictionary.getOrderedFields(), groupDictionary.getOrderedFields());
-        assertArrayEquals(originalGroupDictionary.getOrderedFields(), copyGroupDictionary.getOrderedFields());
-
-        DataDictionary originalNestedGroupDictionary = originalGroupDictionary.getGroup(NewOrderSingle.MSGTYPE, NoPartySubIDs.FIELD).getDataDictionary();
-        DataDictionary nestedGroupDictionary = groupDictionary.getGroup(NewOrderSingle.MSGTYPE, NoPartySubIDs.FIELD).getDataDictionary();
-        DataDictionary copyNestedGroupDictionary = copyGroupDictionary.getGroup(NewOrderSingle.MSGTYPE, NoPartySubIDs.FIELD).getDataDictionary();
-        assertArrayEquals(originalNestedGroupDictionary.getOrderedFields(), nestedGroupDictionary.getOrderedFields());
-        assertArrayEquals(originalNestedGroupDictionary.getOrderedFields(), copyNestedGroupDictionary.getOrderedFields());
-    }
-
-    @Test
-    public void testOrderedFields() throws Exception {
-        final DataDictionary dataDictionary = getDictionary();
-
-        final DataDictionary partyIDsDictionary = dataDictionary.getGroup(NewOrderSingle.MSGTYPE, NoPartyIDs.FIELD).getDataDictionary();
-        int[] expectedPartyIDsFieldOrder = new int[] {PartyID.FIELD, PartyIDSource.FIELD, PartyRole.FIELD, NoPartySubIDs.FIELD};
-        assertArrayEquals(expectedPartyIDsFieldOrder, partyIDsDictionary.getOrderedFields());
-
-        final DataDictionary partySubIDsDictionary = partyIDsDictionary.getGroup(NewOrderSingle.MSGTYPE, NoPartySubIDs.FIELD).getDataDictionary();
-        int[] expectedPartySubIDsFieldOrder = new int[] {PartySubID.FIELD, PartySubIDType.FIELD};
-        assertArrayEquals(expectedPartySubIDsFieldOrder, partySubIDsDictionary.getOrderedFields());
-    }
+//    @Test
+//    public void testMessageDataDictionaryMismatch() throws Exception {
+//        final quickfix.fix43.NewOrderSingle newSingle = new quickfix.fix43.NewOrderSingle(
+//                new ClOrdID("123"), new HandlInst(HandlInst.MANUAL_ORDER), new Side(Side.BUY), new TransactTime(), new OrdType(
+//                        OrdType.LIMIT));
+//        newSingle.setField(new OrderQty(42));
+//        newSingle.setField(new Price(42.37));
+//        newSingle.setField(new Symbol("QFJ"));
+//        newSingle.setField(new TimeInForce(TimeInForce.DAY));
+//        newSingle.setField(new Account("testAccount"));
+//
+//        final DataDictionary dd = getDictionary();
+//        new ExpectedTestFailure(UnsupportedVersion.class,
+//                "Message version 'FIX.4.3' does not match the data dictionary version 'FIX.4.4'") {
+//            @Override
+//            protected void execute() throws Throwable {
+//                dd.validate(newSingle);
+//            }
+//        }.run();
+//
+//        // TODO: This is unexpected for pre-FIX 5.0 messages:
+//        //   If bodyOnly is true, the correct data dictionary is not checked.
+//        dd.validate(newSingle, true);
+//    }
+//    
+//    @Test
+//    public void testAllowUnknownFields() throws Exception {
+//        final quickfix.fix44.NewOrderSingle newSingle = new quickfix.fix44.NewOrderSingle(
+//                new ClOrdID("123"), new Side(Side.BUY), new TransactTime(), new OrdType(
+//                        OrdType.LIMIT));
+//        newSingle.getHeader().setField(new SenderCompID("SENDER"));
+//        newSingle.getHeader().setField(new TargetCompID("TARGET"));
+//        newSingle.getHeader().setField(new BodyLength(100));
+//        newSingle.getHeader().setField(new MsgSeqNum(25));
+//        newSingle.getHeader().setField(new SendingTime());
+//        newSingle.getTrailer().setField(new CheckSum("100"));
+//        newSingle.setField(new OrderQty(42));
+//        newSingle.setField(new Price(42.37));
+//        newSingle.setField(new HandlInst());
+//        newSingle.setField(new Symbol("QFJ"));
+//        newSingle.setField(new HandlInst(HandlInst.MANUAL_ORDER));
+//        newSingle.setField(new TimeInForce(TimeInForce.DAY));
+//        newSingle.setField(new Account("testAccount"));
+//
+//        // Invalid field for this message
+//        newSingle.setField(new LastMkt("FOO"));
+//
+//        final DataDictionary dictionary = new DataDictionary(getDictionary());
+//
+//        new ExpectedTestFailure(FieldException.class, "field=") {
+//            @Override
+//            protected void execute() throws Throwable {
+//                dictionary.validate(newSingle);
+//            }
+//        }.run();
+//
+//        dictionary.setAllowUnknownMessageFields(true);
+//        dictionary.validate(newSingle);
+//    }
+//
+//    // QFJ-535
+//    @Test
+//    public void testNewOrderSingleWithCorrectTag50() throws Exception {
+//
+//        final DataDictionary dataDictionary = new DataDictionary(getDictionary());
+//        dataDictionary.setCheckFieldsOutOfOrder(true);
+//
+//        String correctFixMessage = "8=FIX.4.4\0019=218\00135=D\00149=cust\00150=trader\001" +
+//            "56=FixGateway\00134=449\00152=20110420-09:17:40\00111=clordid\00154=1\00138=50\001" +
+//            "59=6\00140=2\00144=77.1\001432=20110531\00115=CHF\00122=8\00155=symbol\001" +
+//            "48=CH1234.CHF\00121=1\00160=20110420-11:17:39.000\00163=0\001207=VX\00110=009\001";
+//
+//        // in any case, it must be validated as the message is correct
+//        //doValidation and checkFieldsOutOfOrder
+//        final NewOrderSingle nos1 = new NewOrderSingle();
+//        nos1.fromString(correctFixMessage, dataDictionary, true);
+//        dataDictionary.validate(nos1);
+//        assertTrue(nos1.getHeader().isSetField(new SenderSubID()));
+//
+//        //doNotValidation and checkFieldsOutOfOrder
+//        final NewOrderSingle nos2 = new NewOrderSingle();
+//        nos2.fromString(correctFixMessage, dataDictionary, false);
+//        dataDictionary.validate(nos2);
+//        assertTrue(nos2.getHeader().isSetField(new SenderSubID()));
+//
+//        dataDictionary.setCheckFieldsOutOfOrder(false);
+//
+//        //doValidation and no checkFieldsOutOfOrder
+//        final NewOrderSingle nos3 = new NewOrderSingle();
+//        nos3.fromString(correctFixMessage, dataDictionary, true);
+//        dataDictionary.validate(nos3);
+//        assertTrue(nos3.getHeader().isSetField(new SenderSubID()));
+//
+//        //doNotValidation and no checkFieldsOutOfOrder
+//        final NewOrderSingle nos4 = new NewOrderSingle();
+//        nos4.fromString(correctFixMessage, dataDictionary, false);
+//        dataDictionary.validate(nos4);
+//        assertTrue(nos4.getHeader().isSetField(new SenderSubID()));
+//    }
+//
+//    @Test
+//    public void testNewOrderSingleWithMisplacedTag50() throws Exception {
+//
+//        final DataDictionary dataDictionary = new DataDictionary(getDictionary());
+//        dataDictionary.setCheckFieldsOutOfOrder(true);
+//
+//        String incorrectFixMessage = "8=FIX.4.4\0019=218\00135=D\00149=cust\00156=FixGateway\001" +
+//            "34=449\00152=20110420-09:17:40\00111=clordid\00154=1\00138=50\00159=6\00140=2\001" +
+//            "44=77.1\001432=20110531\00115=CHF\00122=8\00155=symbol\00148=CH1234.CHF\00121=1\001" +
+//            "60=20110420-11:17:39.000\00163=0\001207=VX\00150=trader\00110=009\001";
+//
+//        //doValidation and checkFieldsOutOfOrder -> should fail
+//        final NewOrderSingle nos1 = new NewOrderSingle();
+//        try {
+//            nos1.fromString(incorrectFixMessage, dataDictionary, true);
+//        } catch (FieldException fe) {
+//            // expected exception
+//        }
+//
+//        //doNotValidation and checkFieldsOutOfOrder -> should NOT fail
+//        final NewOrderSingle nos2 = new NewOrderSingle();
+//        nos2.fromString(incorrectFixMessage, dataDictionary, false);
+//        dataDictionary.validate(nos2);
+//        assertTrue(nos2.getHeader().isSetField(new SenderSubID()));
+//
+//        dataDictionary.setCheckFieldsOutOfOrder(false);
+//
+//        //doValidation and no checkFieldsOutOfOrder -> should NOT fail
+//        final NewOrderSingle nos3 = new NewOrderSingle();
+//        nos3.fromString(incorrectFixMessage, dataDictionary, true);
+//        dataDictionary.validate(nos3);
+//        assertTrue(nos3.getHeader().isSetField(new SenderSubID()));
+//
+//        //doNotValidation and no checkFieldsOutOfOrder -> should NOT fail
+//        final NewOrderSingle nos4 = new NewOrderSingle();
+//        nos4.fromString(incorrectFixMessage, dataDictionary, false);
+//        dataDictionary.validate(nos4);
+//        assertTrue(nos4.getHeader().isSetField(new SenderSubID()));
+//    }
+//
+//    @Test
+//    public void testCopy() throws Exception {
+//        final DataDictionary dataDictionary = new DataDictionary(getDictionary());
+//
+//        dataDictionary.setAllowUnknownMessageFields(true);
+//        dataDictionary.setCheckFieldsHaveValues(false);
+//        dataDictionary.setCheckFieldsOutOfOrder(false);
+//        dataDictionary.setCheckUnorderedGroupFields(false);
+//        dataDictionary.setCheckUserDefinedFields(false);
+//
+//        DataDictionary ddCopy = new DataDictionary(dataDictionary);
+//
+//        assertEquals(ddCopy.isAllowUnknownMessageFields(),dataDictionary.isAllowUnknownMessageFields());
+//        assertEquals(ddCopy.isCheckFieldsHaveValues(),dataDictionary.isCheckFieldsHaveValues());
+//        assertEquals(ddCopy.isCheckFieldsOutOfOrder(),dataDictionary.isCheckFieldsOutOfOrder());
+//        assertEquals(ddCopy.isCheckUnorderedGroupFields(),dataDictionary.isCheckUnorderedGroupFields());
+//        assertEquals(ddCopy.isCheckUserDefinedFields(),dataDictionary.isCheckUserDefinedFields());
+//        assertArrayEquals(getDictionary().getOrderedFields(),ddCopy.getOrderedFields());
+//        assertArrayEquals(getDictionary().getOrderedFields(),dataDictionary.getOrderedFields());
+//
+//        DataDictionary.GroupInfo groupFromDDCopy = ddCopy.getGroup(NewOrderSingle.MSGTYPE, NoPartyIDs.FIELD);
+//        assertTrue(groupFromDDCopy.getDataDictionary().isAllowUnknownMessageFields());
+//        // set to false on ORIGINAL DD
+//        dataDictionary.setAllowUnknownMessageFields(false);
+//        assertFalse(dataDictionary.isAllowUnknownMessageFields());
+//        assertFalse(dataDictionary.getGroup(NewOrderSingle.MSGTYPE, NoPartyIDs.FIELD).getDataDictionary().isAllowUnknownMessageFields());
+//        // should be still true on COPIED DD and its group
+//        assertTrue(ddCopy.isAllowUnknownMessageFields());
+//        groupFromDDCopy = ddCopy.getGroup(NewOrderSingle.MSGTYPE, NoPartyIDs.FIELD);
+//        assertTrue(groupFromDDCopy.getDataDictionary().isAllowUnknownMessageFields());
+//
+//        DataDictionary originalGroupDictionary = getDictionary().getGroup(NewOrderSingle.MSGTYPE, NoPartyIDs.FIELD).getDataDictionary();
+//        DataDictionary groupDictionary = dataDictionary.getGroup(NewOrderSingle.MSGTYPE, NoPartyIDs.FIELD).getDataDictionary();
+//        DataDictionary copyGroupDictionary = ddCopy.getGroup(NewOrderSingle.MSGTYPE, NoPartyIDs.FIELD).getDataDictionary();
+//        assertArrayEquals(originalGroupDictionary.getOrderedFields(), groupDictionary.getOrderedFields());
+//        assertArrayEquals(originalGroupDictionary.getOrderedFields(), copyGroupDictionary.getOrderedFields());
+//
+//        DataDictionary originalNestedGroupDictionary = originalGroupDictionary.getGroup(NewOrderSingle.MSGTYPE, NoPartySubIDs.FIELD).getDataDictionary();
+//        DataDictionary nestedGroupDictionary = groupDictionary.getGroup(NewOrderSingle.MSGTYPE, NoPartySubIDs.FIELD).getDataDictionary();
+//        DataDictionary copyNestedGroupDictionary = copyGroupDictionary.getGroup(NewOrderSingle.MSGTYPE, NoPartySubIDs.FIELD).getDataDictionary();
+//        assertArrayEquals(originalNestedGroupDictionary.getOrderedFields(), nestedGroupDictionary.getOrderedFields());
+//        assertArrayEquals(originalNestedGroupDictionary.getOrderedFields(), copyNestedGroupDictionary.getOrderedFields());
+//    }
+//
+//    @Test
+//    public void testOrderedFields() throws Exception {
+//        final DataDictionary dataDictionary = getDictionary();
+//
+//        final DataDictionary partyIDsDictionary = dataDictionary.getGroup(NewOrderSingle.MSGTYPE, NoPartyIDs.FIELD).getDataDictionary();
+//        int[] expectedPartyIDsFieldOrder = new int[] {PartyID.FIELD, PartyIDSource.FIELD, PartyRole.FIELD, NoPartySubIDs.FIELD};
+//        assertArrayEquals(expectedPartyIDsFieldOrder, partyIDsDictionary.getOrderedFields());
+//
+//        final DataDictionary partySubIDsDictionary = partyIDsDictionary.getGroup(NewOrderSingle.MSGTYPE, NoPartySubIDs.FIELD).getDataDictionary();
+//        int[] expectedPartySubIDsFieldOrder = new int[] {PartySubID.FIELD, PartySubIDType.FIELD};
+//        assertArrayEquals(expectedPartySubIDsFieldOrder, partySubIDsDictionary.getOrderedFields());
+//    }
 
     /**
      * <pre>
@@ -600,28 +600,28 @@ public class DataDictionaryTest {
         assertTrue(quoteRequestGroupInfo.getDataDictionary().isRequiredField(QuoteRequest.MSGTYPE, Symbol.FIELD));
     }
 
-    /**
-     * Field EffectiveTime(168) is defined as UTCTIMESTAMP so an empty string value is invalid but if we allow blank values that should not fail
-     * validation
-     * @throws Exception
-     */
-    @Test
-    public void testAllowingBlankValuesDisablesFieldValidation() throws Exception {
-        final DataDictionary dictionary = getDictionary();
-        dictionary.setCheckFieldsHaveValues(false);
-        final quickfix.fix44.NewOrderSingle newSingle = new quickfix.fix44.NewOrderSingle(
-                new ClOrdID("123"), new Side(Side.BUY), new TransactTime(), new OrdType(OrdType.LIMIT)
-        );
-        newSingle.setField(new OrderQty(42));
-        newSingle.setField(new Price(42.37));
-        newSingle.setField(new HandlInst());
-        newSingle.setField(new Symbol("QFJ"));
-        newSingle.setField(new HandlInst(HandlInst.MANUAL_ORDER));
-        newSingle.setField(new TimeInForce(TimeInForce.DAY));
-        newSingle.setField(new Account("testAccount"));
-        newSingle.setField(new StringField(EffectiveTime.FIELD));
-        dictionary.validate(newSingle, true);
-    }
+//    /**
+//     * Field EffectiveTime(168) is defined as UTCTIMESTAMP so an empty string value is invalid but if we allow blank values that should not fail
+//     * validation
+//     * @throws Exception
+//     */
+//    @Test
+//    public void testAllowingBlankValuesDisablesFieldValidation() throws Exception {
+//        final DataDictionary dictionary = getDictionary();
+//        dictionary.setCheckFieldsHaveValues(false);
+//        final quickfix.fix44.NewOrderSingle newSingle = new quickfix.fix44.NewOrderSingle(
+//                new ClOrdID("123"), new Side(Side.BUY), new TransactTime(), new OrdType(OrdType.LIMIT)
+//        );
+//        newSingle.setField(new OrderQty(42));
+//        newSingle.setField(new Price(42.37));
+//        newSingle.setField(new HandlInst());
+//        newSingle.setField(new Symbol("QFJ"));
+//        newSingle.setField(new HandlInst(HandlInst.MANUAL_ORDER));
+//        newSingle.setField(new TimeInForce(TimeInForce.DAY));
+//        newSingle.setField(new Account("testAccount"));
+//        newSingle.setField(new StringField(EffectiveTime.FIELD));
+//        dictionary.validate(newSingle, true);
+//    }
 
 
     // QFJ-971

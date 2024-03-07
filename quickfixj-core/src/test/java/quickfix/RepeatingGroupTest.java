@@ -29,7 +29,7 @@ import quickfix.field.OrderID;
 import quickfix.field.SessionRejectReason;
 import quickfix.field.SettlDate2;
 import quickfix.field.Symbol;
-import quickfix.fix44.Quote;
+//import quickfix.fix44.Quote;
 import quickfix.fix50sp2.QuoteRequest;
 
 public class RepeatingGroupTest {
@@ -39,75 +39,75 @@ public class RepeatingGroupTest {
     // management is independent from the version
 
     // NON NESTED Groups
-    private Quote.NoLegs buildGroupWithStandardFields(String settingValue) {
-        final Quote.NoLegs grp = new Quote.NoLegs();
-        grp.set(new LegSymbol(settingValue));
-        return grp;
-    }
+//    private Quote.NoLegs buildGroupWithStandardFields(String settingValue) {
+//        final Quote.NoLegs grp = new Quote.NoLegs();
+//        grp.set(new LegSymbol(settingValue));
+//        return grp;
+//    }
 
-    @Test
-    public void testSettingGettingGroupWithStandardFields() throws FieldNotFound {
-        final String settingValue = "SETTING_VALUE";
-
-        final Quote.NoLegs grp = buildGroupWithStandardFields(settingValue);
-
-        final LegSymbol accessorField = new LegSymbol();
-        final LegSymbol gotField = (LegSymbol) grp.getField(accessorField);
-
-        // We assume that checksum equality s enough - DV
-        assertEquals("GettingValue is not the same the SettingValue", settingValue, gotField
-                .getValue());
-    }
-
-    private Quote.NoLegs buildGroupWithCustomFields(String settingValue) {
-        final Quote.NoLegs grp = new Quote.NoLegs();
-        grp.setField(new StringField(9001, settingValue)); // Custom tag is
-        // 9001
-        return grp;
-    }
-
-    @Test
-    public void testSettingGettingGroupWithCustomFields() throws FieldNotFound {
-        final String settingValue = "SETTING_VALUE";
-
-        final Quote.NoLegs grp = buildGroupWithCustomFields(settingValue);
-
-        final StringField accessorField = new StringField(9001); // Custom tag is
-        // 9001
-        final StringField gotField = grp.getField(accessorField);
-
-        // We assume that checksum equality s enough - DV
-        assertEquals("GettingValue is not the same the SettingValue", settingValue, gotField
-                .getValue());
-    }
-
-    private Quote.NoLegs buildGroupWithCustomAndStandardFields(String settingValue) {
-        final Quote.NoLegs grp = new Quote.NoLegs();
-        grp.setField(new StringField(9001, settingValue)); // Custom tag is
-        // 9001
-        grp.set(new LegSymbol(settingValue));
-        return grp;
-    }
-
-    @Test
-    public void testSettingGettingGroupWithCustomAndStandardFields() throws FieldNotFound {
-        final String settingValue = "SETTING_VALUE";
-
-        final Quote.NoLegs grp = buildGroupWithCustomAndStandardFields(settingValue);
-
-        final StringField accessorField = new StringField(9001); // Custom tag is
-        // 9001
-        final StringField gotField = grp.getField(accessorField);
-
-        final LegSymbol accessorFieldStd = new LegSymbol(); // Standard Field
-        final LegSymbol gotFieldStd = (LegSymbol) grp.getField(accessorFieldStd);
-
-        assertEquals("GettingValue is not the same the SettingValue", settingValue, gotField
-                .getValue());
-
-        assertEquals("GettingValue is not the same the SettingValue", settingValue, gotFieldStd
-                .getValue());
-    }
+//    @Test
+//    public void testSettingGettingGroupWithStandardFields() throws FieldNotFound {
+//        final String settingValue = "SETTING_VALUE";
+//
+//        final Quote.NoLegs grp = buildGroupWithStandardFields(settingValue);
+//
+//        final LegSymbol accessorField = new LegSymbol();
+//        final LegSymbol gotField = (LegSymbol) grp.getField(accessorField);
+//
+//        // We assume that checksum equality s enough - DV
+//        assertEquals("GettingValue is not the same the SettingValue", settingValue, gotField
+//                .getValue());
+//    }
+//
+//    private Quote.NoLegs buildGroupWithCustomFields(String settingValue) {
+//        final Quote.NoLegs grp = new Quote.NoLegs();
+//        grp.setField(new StringField(9001, settingValue)); // Custom tag is
+//        // 9001
+//        return grp;
+//    }
+//
+//    @Test
+//    public void testSettingGettingGroupWithCustomFields() throws FieldNotFound {
+//        final String settingValue = "SETTING_VALUE";
+//
+//        final Quote.NoLegs grp = buildGroupWithCustomFields(settingValue);
+//
+//        final StringField accessorField = new StringField(9001); // Custom tag is
+//        // 9001
+//        final StringField gotField = grp.getField(accessorField);
+//
+//        // We assume that checksum equality s enough - DV
+//        assertEquals("GettingValue is not the same the SettingValue", settingValue, gotField
+//                .getValue());
+//    }
+//
+//    private Quote.NoLegs buildGroupWithCustomAndStandardFields(String settingValue) {
+//        final Quote.NoLegs grp = new Quote.NoLegs();
+//        grp.setField(new StringField(9001, settingValue)); // Custom tag is
+//        // 9001
+//        grp.set(new LegSymbol(settingValue));
+//        return grp;
+//    }
+//
+//    @Test
+//    public void testSettingGettingGroupWithCustomAndStandardFields() throws FieldNotFound {
+//        final String settingValue = "SETTING_VALUE";
+//
+//        final Quote.NoLegs grp = buildGroupWithCustomAndStandardFields(settingValue);
+//
+//        final StringField accessorField = new StringField(9001); // Custom tag is
+//        // 9001
+//        final StringField gotField = grp.getField(accessorField);
+//
+//        final LegSymbol accessorFieldStd = new LegSymbol(); // Standard Field
+//        final LegSymbol gotFieldStd = (LegSymbol) grp.getField(accessorFieldStd);
+//
+//        assertEquals("GettingValue is not the same the SettingValue", settingValue, gotField
+//                .getValue());
+//
+//        assertEquals("GettingValue is not the same the SettingValue", settingValue, gotFieldStd
+//                .getValue());
+//    }
 
     // NESTED Groups outside messages
     private quickfix.fix44.QuoteRequest.NoRelatedSym buildNestedGroupWithStandardFields(

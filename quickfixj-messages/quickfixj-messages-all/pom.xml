@@ -28,66 +28,6 @@
 	</dependencies>
 	<profiles>
 		<profile>
-			<id>minimal-fix-latest</id>
-			<!-- This profile has a very specialised purpose.
-				This profile transforms the orchestra file to restrict fields, components, groups and messages to those that are used in tests
-				of the core module. This is to reduce the size and complexity of the FIX Latest package so that processes such as CodeQL
-				do not use unreasonable heap size and can successfully run as part of the pull request workflow.
-				This profile does not produce a coherent orchestration nor a FIX Latest package representing a sensible Rules of Engagement.
-			-->
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>xml-maven-plugin</artifactId>
-						<executions>
-						  <execution>
-							<id>MinimiseOrchestraRepo</id>
-							<phase>generate-sources</phase>
-							<goals>
-							  <goal>transform</goal>
-							</goals>
-							<configuration>
-								<transformationSets>
-									<transformationSet>
-										<dir>${project.build.directory}/dependency/repository</dir>
-										<outputDir>${project.build.directory}/generated-resources/min</outputDir>
-										<includes>
-											<include>${orchestra.file}</include>
-										</includes>
-										<stylesheet>${project.basedir}/src/main/xsl/minimiseOrchestra.xsl</stylesheet>
-									</transformationSet>
-								</transformationSets>
-							</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.quickfixj.orchestra</groupId>
-						<artifactId>quickfixj-from-fix-orchestra-code-generator-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<phase>generate-sources</phase>
-								<goals>
-									<goal>codeGeneration</goal>
-								</goals>
-								<id>fixLatest</id>
-							</execution>
-						</executions>
-						<configuration>
-							<orchestration>${project.build.directory}/generated-resources/min/${orchestra.file}</orchestration>
-							<outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
-							<excludeSession>true</excludeSession><!-- fixt11 has already been generated -->
-							<generateFixt11Package>false</generateFixt11Package>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
 			<id>full-fix-latest</id>
 			<!-- This profile builds the full fix latest specification to testing that a new version of the full specification
 			     does not introduce issues in the core QuickFIX/J build -->
@@ -133,31 +73,7 @@
 				<directory>${project.build.directory}/dependency/repository</directory>
 			</resource>
 			<resource>
-				<directory>../quickfixj-messages-fixt11/src/main/resources</directory>
-			</resource>
-			<resource>
-				<directory>../quickfixj-messages-fix50sp2/src/main/resources</directory>
-			</resource>
-			<resource>
-				<directory>../quickfixj-messages-fix50sp1/src/main/resources</directory>
-			</resource>
-			<resource>
-				<directory>../quickfixj-messages-fix50/src/main/resources</directory>
-			</resource>
-			<resource>
 				<directory>../quickfixj-messages-fix44/src/main/resources</directory>
-			</resource>
-			<resource>
-				<directory>../quickfixj-messages-fix43/src/main/resources</directory>
-			</resource>
-			<resource>
-				<directory>../quickfixj-messages-fix42/src/main/resources</directory>
-			</resource>
-			<resource>
-				<directory>../quickfixj-messages-fix41/src/main/resources</directory>
-			</resource>
-			<resource>
-				<directory>../quickfixj-messages-fix40/src/main/resources</directory>
 			</resource>
 			<resource>
 				<directory>../../quickfixj-orchestration/target/generated-resources</directory>
@@ -169,31 +85,7 @@
 				<directory>src/test/resources</directory>
 			</testResource>
 			<testResource>
-				<directory>../quickfixj-messages-fixt11/src/main/resources</directory>
-			</testResource>
-			<testResource>
-				<directory>../quickfixj-messages-fix50sp2/src/main/resources</directory>
-			</testResource>
-			<testResource>
-				<directory>../quickfixj-messages-fix50sp1/src/main/resources</directory>
-			</testResource>
-			<testResource>
-				<directory>../quickfixj-messages-fix50/src/main/resources</directory>
-			</testResource>
-			<testResource>
 				<directory>../quickfixj-messages-fix44/src/main/resources</directory>
-			</testResource>
-			<testResource>
-				<directory>../quickfixj-messages-fix43/src/main/resources</directory>
-			</testResource>
-			<testResource>
-				<directory>../quickfixj-messages-fix42/src/main/resources</directory>
-			</testResource>
-			<testResource>
-				<directory>../quickfixj-messages-fix41/src/main/resources</directory>
-			</testResource>
-			<testResource>
-				<directory>../quickfixj-messages-fix40/src/main/resources</directory>
 			</testResource>
 			<testResource>
 				<directory>src/main/resources</directory>
@@ -222,25 +114,6 @@
 							</artifactItems>
 						</configuration>
 					</execution>
-					<execution>
-						<id>unpack-fixt11-sources</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.quickfixj</groupId>
-									<artifactId>quickfixj-messages-fixt11</artifactId>
-									<classifier>sources</classifier>
-									<version>${project.version}</version>
-									<includes>**/*.java</includes>
-									<outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -249,54 +122,6 @@
 				<version>${project.version}</version>
 				<executions>
 					<execution>
-						<id>fix40</id>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<dictFile>../quickfixj-messages-fix40/src/main/resources/FIX40.xml</dictFile>
-							<packaging>quickfix.fix40</packaging>
-							<fieldPackage>quickfix.field</fieldPackage>
-							<decimal>${generator.decimal}</decimal>
-						</configuration>
-					</execution>
-					<execution>
-						<id>fix41</id>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<dictFile>../quickfixj-messages-fix41/src/main/resources/FIX41.xml</dictFile>
-							<packaging>quickfix.fix41</packaging>
-							<fieldPackage>quickfix.field</fieldPackage>
-							<decimal>${generator.decimal}</decimal>
-						</configuration>
-					</execution>
-					<execution>
-						<id>fix42</id>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<dictFile>../quickfixj-messages-fix42/src/main/resources/FIX42.xml</dictFile>
-							<packaging>quickfix.fix42</packaging>
-							<fieldPackage>quickfix.field</fieldPackage>
-							<decimal>${generator.decimal}</decimal>
-						</configuration>
-					</execution>
-					<execution>
-						<id>fix43</id>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<dictFile>../quickfixj-messages-fix43/src/main/resources/FIX43.xml</dictFile>
-							<packaging>quickfix.fix43</packaging>
-							<fieldPackage>quickfix.field</fieldPackage>
-							<decimal>${generator.decimal}</decimal>
-						</configuration>
-					</execution>
-					<execution>
 						<id>fix44</id>
 						<goals>
 							<goal>generate</goal>
@@ -304,42 +129,6 @@
 						<configuration>
 							<dictFile>../quickfixj-messages-fix44/src/main/resources/FIX44.modified.xml</dictFile>
 							<packaging>quickfix.fix44</packaging>
-							<fieldPackage>quickfix.field</fieldPackage>
-							<decimal>${generator.decimal}</decimal>
-						</configuration>
-					</execution>
-					<execution>
-						<id>fix50</id>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<dictFile>../quickfixj-messages-fix50/src/main/resources/FIX50.xml</dictFile>
-							<packaging>quickfix.fix50</packaging>
-							<fieldPackage>quickfix.field</fieldPackage>
-							<decimal>${generator.decimal}</decimal>
-						</configuration>
-					</execution>
-					<execution>
-						<id>fix50sp1</id>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<dictFile>../quickfixj-messages-fix50sp1/src/main/resources/FIX50SP1.modified.xml</dictFile>
-							<packaging>quickfix.fix50sp1</packaging>
-							<fieldPackage>quickfix.field</fieldPackage>
-							<decimal>${generator.decimal}</decimal>
-						</configuration>
-					</execution>
-					<execution>
-						<id>fix50sp2</id>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<dictFile>../quickfixj-messages-fix50sp2/src/main/resources/FIX50SP2.modified.xml</dictFile>
-							<packaging>quickfix.fix50sp2</packaging>
 							<fieldPackage>quickfix.field</fieldPackage>
 							<decimal>${generator.decimal}</decimal>
 						</configuration>
